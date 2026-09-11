@@ -1,9 +1,18 @@
-# GPT-3 精读笔记：《语言模型是少样本学习者》
+---
+title: "GPT-3: Language Models are Few-Shot Learners"
+date: 2026-09-11 17:30:00 +0800
+permalink: /posts/gpt3-language-models-are-few-shot-learners/
+categories: [技术笔记, 深度学习]
+tags: [gpt, gpt-3, transformer, 少样本, 上下文学习, 预训练, nlp, 论文精读, 大模型]
+math: true
+mermaid: false
+toc: true
+---
 
-> **原文标题：** Language Models are Few-Shot Learners
-> **作者：** Tom B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah 等（OpenAI，共 31 位作者）
-> **发表：** arXiv:2005.14165v4（NeurIPS 2020），2020 年
-> **一句话总结：** 训练一个 1750 亿参数（175 Billion）的自回归语言模型 GPT-3，证明**仅靠扩大模型规模**，就能在**不做任何梯度更新 / 微调（fine-tuning）** 的前提下，通过"少样本"的上下文学习（in-context learning）在大量 NLP 任务上取得强劲甚至逼近 SOTA 的表现。
+> **原文标题（Original Title）**：Language Models are Few-Shot Learners
+> **作者（Authors）**：Tom B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah 等（OpenAI，共 31 位作者）
+> **发表时间**：arXiv:2005.14165v4（NeurIPS 2020），2020 年
+> **一句话总结**：训练一个 1750 亿参数（175 Billion）的自回归语言模型 **GPT-3**，证明**仅靠扩大模型规模**，就能在**不做任何梯度更新 / 微调（Fine-tuning）** 的前提下，通过"少样本"的上下文学习（In-context Learning）在大量 NLP 任务上取得强劲甚至逼近 SOTA 的表现。
 
 ---
 
@@ -18,33 +27,34 @@
 7. [更广泛的社会影响](#7-更广泛的社会影响)
 8. [相关工作与结论](#8-相关工作与结论)
 9. [关键要点速记](#9-关键要点速记)
-10. [附录](#附录)
+10. [附录 A：专有名词中英对照表](#附录-a专有名词中英对照表)
+11. [附录 B：原文与 PDF 链接](#附录-b原文与-pdf-链接)
 
 ---
 
 ## 1. 研究动机与核心问题
 
-近年 NLP 的主流范式是"预训练 + 微调"（pre-training + fine-tuning）：先在大规模语料上做与任务无关（task-agnostic）的预训练，再针对具体任务用成千上万条标注样本做微调。这一范式虽然架构上通用，但仍存在三大问题：
+近年 NLP 的主流范式是"预训练 + 微调"（Pre-training + Fine-tuning）：先在大规模语料上做与任务无关（Task-agnostic）的预训练，再针对具体任务用成千上万条标注样本做微调。这一范式虽然架构上通用，但仍存在三大问题：
 
 1. **实用性受限**：每个新任务都需要大规模标注数据集，而现实中很多任务难以收集大量监督数据。
-2. **泛化性存疑**：模型可能过度拟合狭窄的微调分布，利用训练数据中的**伪相关（spurious correlations）**，导致在基准上"看似达到人类水平"却夸大了真实能力；有研究表明大模型未必有更好的分布外（out-of-distribution）泛化。
+2. **泛化性存疑**：模型可能过度拟合狭窄的微调分布，利用训练数据中的**伪相关（Spurious Correlations）**，导致在基准上"看似达到人类水平"却夸大了真实能力；有研究表明大模型未必有更好的分布外（Out-of-Distribution）泛化。
 3. **与人类学习方式不符**：人类学一个新语言任务往往只需一句自然语言指令或极少数几个示例，不需要大规模监督数据集。
 
-作者提出的解决路线是**元学习（meta-learning）** + **上下文学习（in-context learning）**：模型在预训练阶段习得广泛的技能与模式识别能力，在**推理时**通过输入文本（指令和/或若干示例）快速适配到目标任务，无需更新权重。
+作者提出的解决路线是**元学习（Meta-learning）** + **上下文学习（In-context Learning）**：模型在预训练阶段习得广泛的技能与模式识别能力，在**推理时**通过输入文本（指令和/或若干示例）快速适配到目标任务，无需更新权重。
 
-> 此前 GPT-2 [RWC+19] 已初步验证该思路，但结果远逊于微调（如 Natural Questions 仅 4%）。作者假设：既然模型容量从 1 亿 → 15 亿 → 175 亿参数一路增长且下游能力随规模平滑提升，那么**上下文学习能力也可能随规模显著增强**。
+> 此前 GPT-2 已初步验证该思路，但结果远逊于微调（如 Natural Questions 仅 4%）。作者假设：既然模型容量从 1 亿 → 15 亿 → 175 亿参数一路增长且下游能力随规模平滑提升，那么**上下文学习能力也可能随规模显著增强**。
 
-**图 1.1：语言模型的元学习。** 预训练（外循环 / outer loop，通过 SGD 学习）中模型习得广泛能力；推理时（内循环 / inner loop，即"上下文学习"）在单次前向传播内快速识别并适配任务。
+**图 1.1：语言模型的元学习（Meta-learning）。** 预训练（外循环 / outer loop，通过 SGD 学习）中模型习得广泛能力；推理时（内循环 / inner loop，即"上下文学习"）在单次前向传播内快速识别并适配任务。
 
-![图1.1 元学习](figs/fig1.1_meta_learning.png)
+![图1.1 语言模型元学习](/assets/posts/gpt3/fig1-1-meta-learning.png)
 
 **图 1.2：更大的模型能更高效地利用上下文信息。** 展示"从单词中删除随机符号"任务的上下文学习曲线：大模型的学习曲线更陡峭，且加入自然语言任务描述后表现更好。
 
-![图1.2 上下文学习效率](figs/fig1.2_incontext.png)
+![图1.2 上下文学习效率](/assets/posts/gpt3/fig1-2-incontext.png)
 
-**图 1.3：42 个以准确率衡量的基准上的聚合表现。** 零样本（zero-shot）性能随规模稳步提升，而少样本（few-shot）性能提升更快，说明大模型更擅长上下文学习。
+**图 1.3：42 个以准确率衡量的基准上的聚合表现。** 零样本（Zero-shot）性能随规模稳步提升，而少样本（Few-shot）性能提升更快，说明大模型更擅长上下文学习。
 
-![图1.3 聚合性能](figs/fig1.3_aggregate.png)
+![图1.3 聚合性能](/assets/posts/gpt3/fig1-3-aggregate.png)
 
 ---
 
@@ -60,13 +70,13 @@
 | 零样本 | Zero-Shot (0S) | ❌ 否 | 0（仅自然语言指令）|
 
 - **微调（Fine-Tuning）**：传统主流方法，优点是基准表现强，缺点是需要新的大数据集、分布外泛化差、易利用伪特征。**本文不对 GPT-3 做微调**，聚焦任务无关的能力。
-- **少样本（Few-Shot）**：推理时给若干示例作为条件（conditioning），不更新权重。上下文窗口 `n_ctx = 2048`，通常放 10~100 个示例。优点是大幅减少对任务数据的需求；缺点是当时表现仍逊于 SOTA 微调模型。
+- **少样本（Few-Shot）**：推理时给若干示例作为条件（Conditioning），不更新权重。上下文窗口 $n_{ctx} = 2048$，通常放 10~100 个示例。优点是大幅减少对任务数据的需求；缺点是当时表现仍逊于 SOTA 微调模型。
 - **单样本（One-Shot）**：只给一个示例 + 自然语言描述。最接近人类被交代任务的方式（如 Mechanical Turk 上给一个示范）。
 - **零样本（Zero-Shot）**：只给自然语言指令，不给任何示例。最方便、最鲁棒，但也最难，有时对人类都"不公平地难"。
 
 **图 2.1：零样本、单样本、少样本 与 传统微调 的对比。** 以"英译法"为例展示四种方法。微调需反复梯度更新；而 zero/one/few-shot 在测试时只做前向传播。
 
-![图2.1 四种设定对比](figs/fig2.1_settings.png)
+![图2.1 四种设定对比](/assets/posts/gpt3/fig2-1-settings.png)
 
 ---
 
@@ -74,13 +84,13 @@
 
 ### 3.1 模型与架构
 
-- 与 **GPT-2** 使用相同的模型和架构（含修改的初始化、预归一化 pre-normalization、可逆分词 reversible tokenization），**唯一区别**：在 Transformer 层中交替使用**稠密注意力**和**局部带状稀疏注意力（locally banded sparse attention）**，类似 **Sparse Transformer** [CGRS19]。
-- 训练了 **8 种不同规模**的模型（1.25 亿 → 1750 亿参数，跨三个数量级），以验证性能随规模的幂律（power-law）关系。
-- 所有模型上下文窗口均为 `n_ctx = 2048` tokens；前馈层为瓶颈层的 4 倍（`d_ff = 4 × d_model`）。
+- 与 **GPT-2** 使用相同的模型和架构（含修改的初始化、预归一化 Pre-normalization、可逆分词 Reversible Tokenization），**唯一区别**：在 Transformer 层中交替使用**稠密注意力**和**局部带状稀疏注意力（Locally Banded Sparse Attention）**，类似 **Sparse Transformer**。
+- 训练了 **8 种不同规模**的模型（1.25 亿 → 1750 亿参数，跨三个数量级），以验证性能随规模的幂律（Power-law）关系。
+- 所有模型上下文窗口均为 $n_{ctx} = 2048$ tokens；前馈层为瓶颈层的 4 倍（$d_{ff} = 4 \times d_{model}$）。
 
 **表 2.1：8 个模型的规模、架构与学习超参数**（均训练 3000 亿 tokens）：
 
-| 模型名称 | 参数量 n_params | 层数 n_layers | d_model | 注意力头数 n_heads | d_head | 批大小 | 学习率 |
+| 模型名称 | 参数量 $n_{params}$ | 层数 $n_{layers}$ | $d_{model}$ | 头数 $n_{heads}$ | $d_{head}$ | 批大小 | 学习率 |
 |---|---|---|---|---|---|---|---|
 | GPT-3 Small | 125M | 12 | 768 | 12 | 64 | 0.5M | 6.0×10⁻⁴ |
 | GPT-3 Medium | 350M | 24 | 1024 | 16 | 64 | 0.5M | 3.0×10⁻⁴ |
@@ -95,14 +105,14 @@
 
 采取 3 步提升数据质量：
 1. 基于与高质量参考语料的相似度，**过滤 Common Crawl**；
-2. 在文档级做**模糊去重（fuzzy deduplication）**（跨数据集内外），保护验证集完整性；
+2. 在文档级做**模糊去重（Fuzzy Deduplication）**（跨数据集内外），保护验证集完整性；
 3. 加入已知的高质量参考语料（扩展版 WebText、两个网络书籍语料 Books1/Books2、英文维基百科）增加多样性。
 
 Common Crawl 过滤前 45TB 压缩明文、过滤后 570GB（约 4000 亿 BPE tokens）。**数据并非按体量比例采样**——质量更高的数据集被更频繁采样。
 
 **表 2.2：GPT-3 训练数据混合**：
 
-| 数据集 | 数量（tokens） | 训练混合权重 | 训练 3000 亿 tokens 时经历的 epoch |
+| 数据集 | 数量（tokens） | 训练混合权重 | 训练 3000 亿 tokens 时经历的 Epoch |
 |---|---|---|---|
 | Common Crawl（已过滤） | 4100 亿 | 60% | 0.44 |
 | WebText2 | 190 亿 | 22% | 2.9 |
@@ -114,20 +124,20 @@ Common Crawl 过滤前 45TB 压缩明文、过滤后 570GB（约 4000 亿 BPE to
 
 ### 3.3 训练过程
 
-- 大模型用更大的批大小、更小的学习率；通过测量训练中的**梯度噪声尺度（gradient noise scale）** 指导批大小选择。
-- 为避免显存溢出，同时在矩阵乘法内部和网络层之间使用**模型并行（model parallelism）**。
+- 大模型用更大的批大小、更小的学习率；通过测量训练中的**梯度噪声尺度（Gradient Noise Scale）** 指导批大小选择。
+- 为避免显存溢出，同时在矩阵乘法内部和网络层之间使用**模型并行（Model Parallelism）**。
 - 所有模型在 **微软提供的高带宽集群的 V100 GPU** 上训练。
 
-**图 2.2：训练所用总算力。** 依据《神经语言模型的缩放定律》[KMH+20]，作者训练更大的模型但用更少的 tokens。GPT-3 175B 训练消耗数千 petaflop/s-days。
+**图 2.2：训练所用总算力。** 依据《神经语言模型的缩放定律》（Scaling Laws），作者训练更大的模型但用更少的 tokens。GPT-3 175B 训练消耗数千 petaflop/s-days。
 
-![图2.2 训练算力](figs/fig2.2_compute.png)
+![图2.2 训练算力](/assets/posts/gpt3/fig2-2-compute.png)
 
 ### 3.4 评估方法
 
 - 少样本：从任务训练集随机抽取 K 个示例作为条件；K 可从 0 到上下文窗口上限（通常 10~100）。
 - 多选题任务：比较各选项的 LM 似然（多数任务用**每 token 似然**归一化长度；ARC、OpenBookQA、RACE 用无条件概率归一化）。
 - 二分类任务：给选项更有语义的名字（如 "True"/"False"）当多选处理。
-- 自由生成任务：用 **束搜索（beam search）**，束宽 4、长度惩罚 α=0.6；用 F1、BLEU 或精确匹配（exact match）评分。
+- 自由生成任务：用 **束搜索（Beam Search）**，束宽 4、长度惩罚 $\alpha=0.6$；用 F1、BLEU 或精确匹配（Exact Match）评分。
 
 ---
 
@@ -135,14 +145,18 @@ Common Crawl 过滤前 45TB 压缩明文、过滤后 570GB（约 4000 亿 BPE to
 
 在 9 大类任务上评估全部 8 个模型（zero/one/few-shot）。
 
-**图 3.1：性能随算力平滑缩放。** 交叉熵验证损失随训练算力呈幂律趋势，[KMH+20] 观察到的规律在多两个数量级上继续成立，仅有微小偏离。拟合曲线 $L = 2.57 \cdot C^{-0.048}$。
+**图 3.1：性能随算力平滑缩放。** 交叉熵验证损失随训练算力呈幂律趋势，此前观察到的规律在多两个数量级上继续成立，仅有微小偏离。拟合曲线：
 
-![图3.1 平滑缩放](figs/fig3.1_scaling.png)
+$$
+L = 2.57 \cdot C^{-0.048}
+$$
+
+![图3.1 平滑缩放](/assets/posts/gpt3/fig3-1-scaling.png)
 
 ### 4.1 语言建模、完形填空与补全任务
 
-- **PTB（Penn Tree Bank）语言建模**：零样本困惑度（perplexity）达 **20.50**，比前 SOTA 大幅提升 15 个点。
-- **LAMBADA**（长距依赖，预测句末词）：零样本准确率 76.2%，少样本 **86.4%**（较前 SOTA 提升超 18%）。GPT-3 2.7B 在此设定即超越 17B 的 Turing-NLG。用填空格式（fill-in-the-blank）框定任务是关键技巧。
+- **PTB（Penn Tree Bank）语言建模**：零样本困惑度（Perplexity）达 **20.50**，比前 SOTA 大幅提升 15 个点。
+- **LAMBADA**（长距依赖，预测句末词）：零样本准确率 76.2%，少样本 **86.4%**（较前 SOTA 提升超 18%）。GPT-3 2.7B 在此设定即超越 17B 的 Turing-NLG。用填空格式（Fill-in-the-blank）框定任务是关键技巧。
 - **HellaSwag**（选故事最佳结尾）：少样本 79.3%（低于 SOTA 85.6%，但超过微调的 1.5B 模型）。
 - **StoryCloze**：少样本 87.7%。
 
@@ -157,7 +171,7 @@ Common Crawl 过滤前 45TB 压缩明文、过滤后 570GB（约 4000 亿 BPE to
 
 **图 3.2：LAMBADA 上少样本能力带来准确率的强劲提升。**
 
-![图3.2 LAMBADA](figs/fig3.2_lambada.png)
+![图3.2 LAMBADA](/assets/posts/gpt3/fig3-2-lambada.png)
 
 ### 4.2 闭卷问答（Closed Book QA）
 
@@ -178,7 +192,7 @@ Common Crawl 过滤前 45TB 压缩明文、过滤后 570GB（约 4000 亿 BPE to
 
 **图 3.3：TriviaQA 上性能随模型规模平滑增长**，说明模型容量直接转化为吸收的"知识量"。
 
-![图3.3 TriviaQA](figs/fig3.3_triviaqa.png)
+![图3.3 TriviaQA](/assets/posts/gpt3/fig3-3-triviaqa.png)
 
 ### 4.3 翻译
 
@@ -198,7 +212,7 @@ GPT-3 训练数据 93% 为英语、7% 为其他语言。
 
 **图 3.4：6 个语言对的少样本翻译性能随模型规模的变化。**
 
-![图3.4 翻译](figs/fig3.4_translation.png)
+![图3.4 翻译](/assets/posts/gpt3/fig3-4-translation.png)
 
 ### 4.4 Winograd 风格任务（代词指代消解）
 
@@ -215,7 +229,7 @@ GPT-3 训练数据 93% 为英语、7% 为其他语言。
 
 **图 3.5：对抗性 Winogrande 上零/单/少样本随规模的表现。**
 
-![图3.5 Winogrande](figs/fig3.5_winogrande.png)
+![图3.5 Winogrande](/assets/posts/gpt3/fig3-5-winogrande.png)
 
 ### 4.5 常识推理
 
@@ -232,7 +246,7 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 **图 3.6：PIQA 上零/单/少样本结果。**
 
-![图3.6 PIQA](figs/fig3.6_piqa.png)
+![图3.6 PIQA](/assets/posts/gpt3/fig3-6-piqa.png)
 
 ### 4.6 阅读理解
 
@@ -249,7 +263,7 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 **图 3.7：CoQA 阅读理解结果**，GPT-3 175B 少样本达 85 F1，仅比人类和 SOTA 微调模型差几分。
 
-![图3.7 CoQA](figs/fig3.7_coqa.png)
+![图3.7 CoQA](/assets/posts/gpt3/fig3-7-coqa.png)
 
 ### 4.7 SuperGLUE
 
@@ -266,12 +280,12 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 | GPT-3 Few-Shot | 49.4 | 80.1 | 30.5 | 75.4 | 90.2 | 91.1 |
 
 - COPA、ReCoRD 接近 SOTA；**WiC 是明显弱点**（49.4%，接近随机）。
-- GPT-3 在**比较两句关系**类任务（WiC、RTE、CB）上偏弱，这一现象在 NLI 一节更明显。
+- GPT-3 在**比较两句关系**类任务（WiC、RTE、CB）上偏弱。
 - 少样本 SuperGLUE 分数随模型规模和上下文示例数稳步提升；不到 8 个示例/任务即可超越微调 BERT-Large。
 
 **图 3.8：SuperGLUE 性能随模型规模和上下文示例数提升。**
 
-![图3.8 SuperGLUE](figs/fig3.8_superglue.png)
+![图3.8 SuperGLUE](/assets/posts/gpt3/fig3-8-superglue.png)
 
 ### 4.8 自然语言推理（NLI）
 
@@ -279,7 +293,7 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 **图 3.9：GPT-3 在 ANLI Round 3 上的表现。**
 
-![图3.9 ANLI](figs/fig3.9_anli.png)
+![图3.9 ANLI](/assets/posts/gpt3/fig3-9-anli.png)
 
 ### 4.9 合成与定性任务
 
@@ -302,7 +316,7 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 **图 3.10：不同规模模型在 10 项算术任务上的少样本表现。** 从 13B 到 175B 有显著跃升。
 
-![图3.10 算术](figs/fig3.10_arithmetic.png)
+![图3.10 算术](/assets/posts/gpt3/fig3-10-arithmetic.png)
 
 #### 单词打乱与操作（Word Scrambling）
 
@@ -321,7 +335,7 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 **图 3.11：5 项单词打乱任务的少样本表现随规模变化（K=100）。**
 
-![图3.11 单词打乱](figs/fig3.11_wordscramble.png)
+![图3.11 单词打乱](/assets/posts/gpt3/fig3-11-wordscramble.png)
 
 #### SAT 类比
 
@@ -329,7 +343,7 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 **图 3.12：SAT 类比任务上不同规模模型的表现。**
 
-![图3.12 SAT类比](figs/fig3.12_sat.png)
+![图3.12 SAT类比](/assets/posts/gpt3/fig3-12-sat.png)
 
 #### 新闻文章生成（News Article Generation）
 
@@ -344,16 +358,16 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 | GPT-3 175B | **52%** | 49%–54% |
 
 - 对 175B 生成文章，人类识别准确率仅 **52%**（50% 为随机水平）——**几乎无法分辨**。
-- 对约 500 词的长文章（表 3.12），175B 仍只有 52%。
+- 对约 500 词的长文章，175B 仍只有 52%。
 
 **图 3.13：随模型规模增大，人类识别机器生成文章的能力下降**（趋向随机）。
 
-![图3.13 新闻识别](figs/fig3.13_newsdetect.png)
+![图3.13 新闻识别](/assets/posts/gpt3/fig3-13-newsdetect.png)
 
 #### 学习并使用新词、纠正英语语法
 
-- **使用新词**：给一个杜撰词（如 "Gigamuru" 是一种日本乐器）的定义，让 GPT-3 造句，均能给出合理用法（图 3.16）。
-- **纠正语法**："Poor English Input / Good English Output" 格式，GPT-3 能纠正语法（图 3.17）。
+- **使用新词**：给一个杜撰词（如 "Gigamuru" 是一种日本乐器）的定义，让 GPT-3 造句，均能给出合理用法。
+- **纠正语法**："Poor English Input / Good English Output" 格式，GPT-3 能纠正语法。
 
 ---
 
@@ -370,11 +384,11 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 **图 4.1：GPT-3 训练曲线。** 训练与验证性能间隙随规模和训练时间仅微增，说明间隙主要来自难度差异而非过拟合。
 
-![图4.1 训练曲线](figs/fig4.1_trainingcurves.png)
+![图4.1 训练曲线](/assets/posts/gpt3/fig4-1-trainingcurves.png)
 
 **图 4.2：基准污染分析。** x 轴为高置信度"干净"数据下界，y 轴为仅在干净子集上评估时的性能差异；多数基准变化可忽略。
 
-![图4.2 污染分析](figs/fig4.2_contamination.png)
+![图4.2 污染分析](/assets/posts/gpt3/fig4-2-contamination.png)
 
 ---
 
@@ -382,20 +396,20 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 1. **文本合成弱点**：长文本会语义重复、失去连贯、自相矛盾、出现非逻辑句子；对"常识物理"（如"奶酪放冰箱会不会化"）有困难。
 2. **结构/算法局限**：纯自回归、无双向架构、无去噪目标 → 在需要**双向性**的任务（填空、比较两段内容、需回看长文再给短答）上可能更弱（如 WiC、ANLI、QuAC、RACE）。
-3. **预训练目标的根本局限**：每个 token 权重相同，缺乏"什么更重要"的概念；缺乏视频/物理世界等**多模态锚定（grounding）**。
+3. **预训练目标的根本局限**：每个 token 权重相同，缺乏"什么更重要"的概念；缺乏视频/物理世界等**多模态锚定（Grounding）**。
 4. **样本效率低**：预训练所见文本远超人一生所见。
 5. **少样本学习的本质不明**：究竟是推理时"从零学会"新任务，还是"识别"训练中见过的任务，尚不清楚。
-6. **推理昂贵不便**：175B 规模推理成本高，可能需**蒸馏（distillation）**。
+6. **推理昂贵不便**：175B 规模推理成本高，可能需**蒸馏（Distillation）**。
 7. **深度学习共性问题**：决策不可解释、预测校准差、保留训练数据偏见。
 
 ---
 
 ## 7. 更广泛的社会影响
 
-### 7.1 语言模型的滥用
+### 7.1 语言模型的滥用（Misuse）
 
 - **潜在滥用**：虚假信息、垃圾邮件、钓鱼、欺诈性学术写作、社会工程等。GPT-3 生成人类难辨的段落是"令人担忧的里程碑"。
-- **威胁行为者分析**：从低技能者到"高级持续威胁（APT）"。GPT-2 发布后监测到滥用讨论但无成功部署；评估认为当前威胁不紧迫，但可靠性显著提升会改变这一点。
+- **威胁行为者分析**：从低技能者到"高级持续威胁（Advanced Persistent Threat, APT）"。GPT-2 发布后监测到滥用讨论但无成功部署；评估认为当前威胁不紧迫，但可靠性显著提升会改变这一点。
 - **外部激励结构**：钓鱼因低成本高收益而流行；语言模型输出随机，仍需人工过滤，限制了规模化。
 
 ### 7.2 公平、偏见与表征（Fairness, Bias, and Representation）
@@ -406,11 +420,9 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 - **种族**：'Asian' 情感分持续较高（7 个模型中 3 个排第 1），'Black' 持续较低（7 个中 5 个最低），差异随规模略缩小。
 - **宗教**：如 'Islam' 与 violent、terrorism、terrorist 等词共现率高于其他宗教。
 
-**表 6.1**（175B 最有偏见的描述词）、**表 6.2**（各宗教最常关联词）展示了具体词汇。
+**图 6.1：不同模型的种族情感倾向（Racial Sentiment）。**
 
-**图 6.1：不同模型的种族情感倾向。**
-
-![图6.1 种族情感](figs/fig6.1_racial.png)
+![图6.1 种族情感](/assets/posts/gpt3/fig6-1-racial.png)
 
 ### 7.3 能耗（Energy Usage）
 
@@ -421,7 +433,7 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 
 ## 8. 相关工作与结论
 
-**相关工作**：三条扩规模路线——(1) 直接增大 Transformer 参数与算力（本文所走）；(2) 增参不增算（如混合专家 mixture-of-experts）；(3) 增算不增参（自适应计算时间、通用 Transformer）。本文将模型规模比前人增大 10 倍。多项工作发现损失随规模呈平滑幂律。
+**相关工作**：三条扩规模路线——(1) 直接增大 Transformer 参数与算力（本文所走）；(2) 增参不增算（如混合专家 Mixture-of-Experts）；(3) 增算不增参（自适应计算时间、通用 Transformer）。本文将模型规模比前人增大 10 倍。多项工作发现损失随规模呈平滑幂律。
 
 **结论**：一个 1750 亿参数模型在 zero/one/few-shot 设定下展现强劲性能，部分场景接近 SOTA 微调系统，并能生成高质量样本、完成即兴定义的任务。**性能随规模呈大致可预测的缩放趋势（无需微调）**。尽管存在诸多局限，结果表明**超大规模语言模型可能是构建可适配、通用语言系统的重要要素**。
 
@@ -432,20 +444,18 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 | # | 要点 |
 |---|---|
 | 1 | GPT-3 = 1750 亿参数自回归语言模型，比此前最大非稀疏模型大 **10 倍**。 |
-| 2 | 核心贡献：**规模化 → 上下文学习（in-context learning）能力涌现**，无需梯度更新。 |
+| 2 | 核心贡献：**规模化 → 上下文学习（In-context Learning）能力涌现**，无需梯度更新。 |
 | 3 | 三种评估设定：**zero-shot / one-shot / few-shot**，均只做前向传播。 |
 | 4 | 模型越大，few-shot 与 zero-shot 的差距越大 → 大模型是更好的"元学习者"。 |
 | 5 | 强项：LAMBADA、TriviaQA（闭卷 SOTA）、翻译成英语、PIQA、算术、新闻生成（人类仅 52% 辨识率）。 |
 | 6 | 弱项：NLI（ANLI/RTE）、WiC、部分阅读理解（QuAC/RACE）、单词反写。 |
 | 7 | 训练数据以 Common Crawl 为主（经过滤 + 去重），混合 WebText2/Books/Wikipedia，共 3000 亿 tokens。 |
 | 8 | 系统研究**数据污染**，多数基准影响可忽略；PIQA、Winograd 标注星号。 |
-| 9 | 坦诚讨论**局限**（连贯性、双向性缺失、推理昂贵）与**社会影响**（滥用、性别/种族/宗教偏见、能耗）。 |
+| 9 | 坦诚讨论**局限**与**社会影响**（滥用、性别/种族/宗教偏见、能耗）。 |
 
 ---
 
-## 附录
-
-### 专有名词中英对照表
+## 附录 A：专有名词中英对照表
 
 | 中文 | 英文 |
 |---|---|
@@ -459,7 +469,7 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 | 预训练 | Pre-training |
 | 稀疏注意力 / 稀疏 Transformer | Sparse Attention / Sparse Transformer |
 | 预归一化 | Pre-normalization |
-| 上下文窗口 | Context Window (n_ctx) |
+| 上下文窗口 | Context Window ($n_{ctx}$) |
 | 字节对编码 | Byte-Pair Encoding (BPE) |
 | 困惑度 | Perplexity (ppl) |
 | 束搜索 | Beam Search |
@@ -481,10 +491,12 @@ GPT-3 在 PIQA 上刷新 SOTA（所有设定），但在 ARC、OpenBookQA 上仍
 | 公平、偏见与表征 | Fairness, Bias, and Representation |
 | petaflop/s-天（算力单位）| PetaFLOP/s-days |
 
-### 论文来源
+---
 
-- **PDF 文件：** `Language Models are Few-Shot Learners (1).pdf`（arXiv:2005.14165v4，共 75 页）
-- **论文网址：** <https://arxiv.org/abs/2005.14165>
+## 附录 B：原文与 PDF 链接
+
+- **PDF 文件**：`Language Models are Few-Shot Learners (1).pdf`（arXiv:2005.14165v4，共 75 页）
+- **论文网址**：<https://arxiv.org/abs/2005.14165>
 
 ---
 
