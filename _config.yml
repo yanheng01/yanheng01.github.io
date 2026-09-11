@@ -234,3 +234,5 @@ jekyll-archives:
     category: /categories/:name/
 
 avatar: /assets/img/avatar.jpg
+
+avatar: /assets/img/avatar-work.jpg
