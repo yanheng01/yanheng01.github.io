@@ -232,3 +232,5 @@ jekyll-archives:
   permalinks:
     tag: /tags/:name/
     category: /categories/:name/
+
+avatar: /assets/img/avatar.jpg
