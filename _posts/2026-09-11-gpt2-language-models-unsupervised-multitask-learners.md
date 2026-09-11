@@ -1,6 +1,6 @@
 ---
 title: "GPT-2: Language Models are Unsupervised Multitask Learners"
-date: 2026-09-11 18:30:00 +0800
+date: 2026-09-11 17:00:00 +0800
 permalink: /posts/gpt2-language-models-unsupervised-multitask-learners/
 categories: [技术笔记, 深度学习]
 tags: [gpt, gpt-2, transformer, 零样本, 预训练, nlp, 论文精读, 大模型]
