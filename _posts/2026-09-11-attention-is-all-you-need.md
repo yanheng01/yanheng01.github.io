@@ -351,3 +351,13 @@ $$
 | 最优结果 | State-of-the-Art (SOTA) | 当前最佳水平 |
 | 浮点运算次数 | FLOPs | 衡量计算量 |
 | 全局依赖 | Global Dependencies | 跨整个序列的依赖关系 |
+
+---
+
+## 附录：原始论文（Original Paper）
+
+- **论文标题**：Attention Is All You Need
+- **arXiv 地址**：<https://arxiv.org/abs/1706.03762>
+- **PDF 原文**：[点击查看 / 下载 PDF](/assets/posts/attention/attention-is-all-you-need.pdf)
+
+> 本文所有配图与数据均出自上述原始论文，如需引用请以原文为准。
