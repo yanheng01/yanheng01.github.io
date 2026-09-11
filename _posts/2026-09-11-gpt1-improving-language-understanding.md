@@ -1,6 +1,6 @@
 ---
 title: "GPT-1: Improving Language Understanding by Generative Pre-Training"
-date: 2026-09-11 18:00:00 +0800
+date: 2026-09-11 09:00:00 +0800
 permalink: /posts/gpt1-improving-language-understanding/
 categories: [技术笔记, 深度学习]
 tags: [gpt, gpt-1, transformer, 预训练, nlp, 论文精读, 大模型]
