@@ -1,7 +1,7 @@
 ---
 title: "Chain-of-Thought，LLM 怎么产生复杂推理"
 date: 2026-09-11 18:47:00 +0800
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [chain-of-thought, cot, llm, 推理, prompting, 论文精读, Agent]
 math: true
 mermaid: false

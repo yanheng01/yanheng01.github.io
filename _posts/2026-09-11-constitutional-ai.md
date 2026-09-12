@@ -2,7 +2,7 @@
 title: "Constitutional AI 来自 AI 反馈的无害性"
 date: 2026-09-11 19:00:00 +0800
 permalink: /posts/constitutional-ai/
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [Alignment]
 math: true
 mermaid: false

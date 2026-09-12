@@ -2,7 +2,7 @@
 title: "Llama 2: Open Foundation and Fine-Tuned Chat Models"
 date: 2026-09-11 17:00:00 +0800
 permalink: /posts/llama2-open-foundation-and-fine-tuned-chat-models/
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [llama2, llama, meta, rlhf, sft, 对齐, 安全, 大模型, 论文精读, nlp]
 math: true
 mermaid: false

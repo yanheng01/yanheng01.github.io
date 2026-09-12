@@ -1,7 +1,7 @@
 ---
 title: "Megatron-LM 大模型分布式怎么训练"
 date: 2026-09-11 19:00:00 +0800
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [Megatron-LM, 模型并行, 张量并行, 分布式训练, 大模型, Infra, 论文精读]
 math: true
 mermaid: false

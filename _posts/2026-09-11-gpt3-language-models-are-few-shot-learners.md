@@ -2,7 +2,7 @@
 title: "GPT-3: Language Models are Few-Shot Learners"
 date: 2026-09-11 17:30:00 +0800
 permalink: /posts/gpt3-language-models-are-few-shot-learners/
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [gpt, gpt-3, transformer, 少样本, 上下文学习, 预训练, nlp, 论文精读, 大模型]
 math: true
 mermaid: false

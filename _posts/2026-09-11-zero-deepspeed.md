@@ -2,7 +2,7 @@
 title: "ZeRO / DeepSpeed 万亿参数怎么管理显存"
 date: 2026-09-11 18:42:00 +0800
 permalink: /posts/zero-deepspeed/
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [zero, deepspeed, 显存优化, 数据并行, 大模型, 分布式训练, 论文精读, Infra]
 math: true
 mermaid: false

@@ -2,7 +2,7 @@
 title: "InstructGPT: Training language models to follow instructions with human feedback"
 date: 2026-09-11 16:00:00 +0800
 permalink: /posts/instructgpt-training-lms-to-follow-instructions/
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [instructgpt, gpt-3, rlhf, 对齐, 强化学习, 人类反馈, 大模型, 论文精读, nlp]
 math: true
 mermaid: false

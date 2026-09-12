@@ -2,7 +2,7 @@
 title: "PagedAttention / vLLM：LLM Serving 怎么提高吞吐"
 date: 2026-09-11 18:44:00 +0800
 permalink: /posts/pagedattention-vllm/
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [pagedattention, vllm, kv-cache, llm-serving, gpu, 论文精读, 大模型, Inference]
 math: true
 mermaid: false

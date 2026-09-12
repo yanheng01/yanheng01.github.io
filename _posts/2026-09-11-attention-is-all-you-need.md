@@ -1,7 +1,7 @@
 ---
 title: "Attention is all you need, transformer 学习笔记"
 date: 2026-09-11 17:00:00 +0800
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [transformer, attention, nlp, 论文精读, 大模型]
 math: true
 mermaid: false

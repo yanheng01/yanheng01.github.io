@@ -1,7 +1,7 @@
 ---
 title: "The Llama 3 Herd of Models 精读笔记"
 date: 2026-09-11 18:00:00 +0800
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [llama3, meta, llm, 论文精读, 大模型, 多模态]
 math: true
 mermaid: false

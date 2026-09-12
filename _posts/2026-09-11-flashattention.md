@@ -2,7 +2,7 @@
 title: "FlashAttention: 快速且省内存的精确注意力（IO 感知）"
 date: 2026-09-11 18:00:00 +0800
 permalink: /posts/flashattention/
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [flashattention, attention, transformer, gpu, io-aware, cuda, 论文精读, 大模型, Infra]
 math: true
 mermaid: false

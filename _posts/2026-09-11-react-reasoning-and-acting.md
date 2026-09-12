@@ -1,7 +1,7 @@
 ---
 title: "ReAct，Reasoning + Tool"
 date: 2026-09-11 18:53:00 +0800
-categories: [技术笔记, 深度学习]
+categories: [Agent应用]
 tags: [react, reasoning, tool, llm, agent, 论文精读, Agent]
 math: true
 mermaid: false

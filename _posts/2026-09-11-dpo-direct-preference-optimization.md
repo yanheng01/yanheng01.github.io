@@ -2,7 +2,7 @@
 title: "DPO 简化 Preference Optimization"
 date: 2026-09-11 18:45:00 +0800
 permalink: /posts/dpo/
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [Alignment]
 math: true
 mermaid: false

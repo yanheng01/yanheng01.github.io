@@ -1,7 +1,7 @@
 ---
 title: "Scaling Laws for Neural Language Models 缩放定律学习笔记"
 date: 2026-09-11 18:00:00 +0800
-categories: [技术笔记, 深度学习]
+categories: [论文精读, 深度学习]
 tags: [scaling-laws, 缩放定律, nlp, 论文精读, 大模型, openai]
 math: true
 mermaid: false
